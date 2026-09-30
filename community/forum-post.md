@@ -1,47 +1,35 @@
-# Discussion draft: Decision-Agent Courts for Kleros V2
+# Forum post draft
 
-*Prepared for the Kleros Forum Research category. This file is a publication draft; its presence in the repository does not mean it has been posted to the forum.*
+*For the Proposal category of the Kleros Forum. It hasn't been posted yet.*
 
-We are sharing a first architecture and protocol RFC for **decision-agent courts**: courts designed around independently operated autonomous jurors, adaptive investigation, and a defined path to deeper adjudication when an initial tier does not resolve a dispute.
+**Title:** [Discussion, not a KIP] A fast first court in front of Court #34, where AI jurors can say "not sure"
 
-**Full RFC:** https://github.com/lovon-spec/kleros-decision-agent-courts/blob/main/rfcs/0001-decision-agent-courts.md
+---
 
-This builds on Kleros's existing agentic-court work. It is not an approved specification, a court-creation request, or a claim that automated jurors are new. The aim is to make a proposed court architecture precise enough for the community to critique before implementation choices and economic parameters are frozen.
+Kleros already runs Court #34, the Agentic Commerce Court, where the jurors are expected to be AI agents and rulings can be appealed to humans. I'd like feedback on adding a fast first step in front of it.
 
-## The court, not a common bot
+**The idea**
 
-Our starting question is: how should Kleros support timely adjudication by independent decision agents without prescribing the agent everyone must run?
+1. A new **decision court** holds fast decision models: systems built to quickly pick one of a few answers. Operators bring their own.
+2. Besides the usual answers, a juror there can vote **"did not converge" (DNC)**: it couldn't reach a well-supported ruling in time. That's different from "refuse to arbitrate" and from not voting.
+3. A ruling needs **more than half of all seats**. Otherwise the case moves automatically to **Court #34**, where agents get more time and must always rule. Normal appeals follow, up to human jurors.
+4. The move is **prepaid**: both sides put a bit extra in at the start. It's refunded if the fast court settles the case; otherwise the loser pays it.
+5. **Payouts** for a round that moved up: a ruling that matches the final one earns its fee, a wrong ruling loses its stake, and DNC pays a small charge. No juror's penalty goes to another juror. The payouts are designed so that guessing doesn't pay, and neither does always voting DNC.
 
-A court should define the service: the case and policy references, evidence rules, timing, valid outputs, review, and settlement. Operators choose the implementation. One may use deterministic analysis, another an adaptive research agent, another several models and tools. Open-source and proprietary systems can participate without publishing their internal reasoning traces.
+**Why a court and not one tool**
 
-The investigation graph need not be known in advance. An agent may search, assess sufficiency, identify another material question, and investigate again. The governing policy constrains the inquiry; the decision deadline constrains when its answer must be fixed.
+Nobody picks the method. Anyone can enter with their own decision system, and the payouts decide which ones last. That also keeps panels mixed, so one trick in the evidence is less likely to fool them all.
 
-## Non-convergence as an explicit outcome
+**What runs today**
 
-Alongside the original ruling choices, a juror can submit `DID_NOT_CONVERGE` (DNC): it did not reach a policy-supported ruling by the decision cutoff. This is distinct from the original refusal-to-arbitrate option and from failing to commit or reveal.
+Most of the design fits in a new dispute kit on Kleros 2.0.0. On the contracts deployed today, a case can only move up to its parent court, and the payouts can't be set exactly as proposed. A small pilot could start with a "not sure" answer in the case template, but Kleros's normal payouts would reward "not sure" when most jurors pick it and penalize it like a wrong answer otherwise, so it could only measure speed and coverage.
 
-If the panel's outputs trigger continuation, the dispute moves to a configured deeper **agent** tier before further fallback. That tier can offer a longer window, different fees, or specialist participation. The architecture does not assume that a generic parent court is automatically better at the task.
+**Questions for the people running Court #34**
 
-An application opts into the initial court and route. No privileged classifier decides which disputes deserve escalation; public aggregation and transition rules do. A provisional ruling still needs ordinary appeal rights, because confident agreement can be wrong.
+1. Would a decision court in front of Court #34 be worth piloting, and for which kind of dispute?
+2. Should justifications be optional in the fast court and required in Court #34?
+3. For the move up: a native court jump, or an explicit route to Court #34?
 
-## Use the existing evidence standard
+Full proposal (RFC-0001, Draft 0.2): https://github.com/lovon-spec/kleros-decision-agent-courts/blob/main/rfcs/0001-decision-agent-courts.md
 
-The proposal inherits the governing General Court standard rather than replacing it with a closed list of websites or an identical input package for every agent. The relevant public antecedent is [KIP-32](https://forum.kleros.io/t/kip-32-general-court-policy-update/483): the late-evidence restriction combines timing and reasonable public availability, while allowing later arguments from existing evidence or reasonably discoverable information.
-
-Deeper adjudication buys more opportunity to reason and investigate within that standard. It does not authorize a new evidentiary regime. This does not require an additional Process Court to determine whether each unsuccessful agent was lazy.
-
-## A candidate performance incentive
-
-Consider an initial panel with `B, DNC, DNC`. It escalates; a later panel votes B, and B survives review. The RFC proposes testing a bounded penalty on the earlier DNC votes, paid to the earlier B voter.
-
-The early-solver condition matters. If the initial panel was all DNC—or contained only an earlier A vote followed by final B—the candidate does **not** impose that special DNC transfer. Later success alone is not the trigger.
-
-This is performance-based compensation, not proof that anyone was lazy or that the early voter used a good method. Guessing, fixed-answer strategies, all-DNC coordination, shared-model errors, and cross-tier ownership are explicit analysis targets. Making DNC less costly than a wrong answer is a starting parameter choice, not a proof of incentive compatibility.
-
-## What is ready for discussion
-
-Draft 0.1 describes the court roles, information regime, candidate aggregation, commitment timing, escalation route, funding requirements, confirmation and settlement conditions, and V2 integration boundaries. It includes a validation plan, not completed simulations or audited contracts.
-
-Feedback is especially useful on the court architecture, a first pilot domain, aggregation under DNC and disagreement, prefunding of automatic escalation, all-DNC incentives, and whether a dedicated dispute kit can support the required custody and transition behavior without Core changes.
-
-Please challenge the assumptions and suggest alternatives. The goal is not to sell a finished mechanism; it is to develop a solver-neutral court design with the Kleros community. Detailed feedback can reference the [RFC sections or repository issues](https://github.com/lovon-spec/kleros-decision-agent-courts/issues).
+It's a discussion draft. Nothing has been built, simulated or audited, and it doesn't ask for funding or stake. Counterexamples and corrections are very welcome, here or as [GitHub issues](https://github.com/lovon-spec/kleros-decision-agent-courts/issues).
