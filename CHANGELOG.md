@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3 — 2026-10-06
+
+A revision after a second review, checked against Court #34's on-chain record.
+
+- New lead. The proposal now rests on two promises: no forced guesses in the first round, and any fast ruling can be sent to the agent court at a price paid in advance. Speed and price come second.
+- The objection. Each side's deposit is tied to the answer it backs. After a decision-court ruling, the losing side can object within a short window, and the case moves to the agent court with no new money and no funding race. The side that loses in the end pays.
+- One seat per juror in the decision court.
+- One flat DNC charge. Draft 0.2's two-level charge is now a variant, and the charge is no longer used to deter pushing cases up.
+- New example values (f = 1, L = 9, d = 0.25) and a list of the limits a court's settings must meet. The old values put the bar for ruling at 0.60 to 0.70, and a juror that ruled on 40% of its cases at 95% accuracy could at best break even.
+- One payoff table for every decision-court round: no money moves between jurors. Kleros's usual sharing in settled rounds, which Draft 0.2 kept, is now a variant, because it makes a speculative vote against the likely answer pay.
+- What a settled round pays for, and why that depends on wrong rulings being challenged.
+- A new section on why a separate court and not a feature inside each juror, with a "not sure" dispute kit inside Court #34 as a middle option.
+- Court #34's numbers as it runs today: cases, fees, time to a first and a final ruling, and the cost of appeals.
+- A path of small steps toward a pilot, starting with a shadow run that needs no contracts.
+- Validation plan: three more comparison arms, a shadow gate, pass marks and sample sizes, and reporting on objections and spot checks.
+- A short script that reproduces the payoff numbers (`research/payoff_checks.py`).
+- Eight hard sentences rewritten.
+
 ## 0.2 — 2026-09-30
 
 A revision after the review recorded in issues #1–#22.
