@@ -1,8 +1,8 @@
 # Validation plan for RFC-0001
 
-**Status:** proposed work accompanying Discussion Draft 0.2, 30 September 2026.
+**Status:** proposed work accompanying Discussion Draft 0.3, 6 October 2026.
 
-No experiment, simulation, contract test, or benchmark described here has been executed for this RFC. This document defines how to evaluate the proposal without treating agreement, successful termination, or a single lucky vote as proof of adjudication quality.
+No experiment, contract test, or benchmark described here has been run for this RFC. The only calculations so far are the small payoff checks in [payoff_checks.py](payoff_checks.py). This document defines how to evaluate the proposal without treating agreement, successful termination, or a single lucky vote as proof of adjudication quality.
 
 ## 1. Questions and falsifiable hypotheses
 
@@ -16,6 +16,8 @@ Evaluate the following hypotheses separately:
 | The agent court adds useful capability on the cases the decision court passes up. | It reproduces the same errors, or extra time and research don't improve decisions. |
 | DNC allows uncertainty to be reported without profitable habitual abstention. | Instant-DNC strategies dominate honest participation or form a stable all-DNC equilibrium. |
 | The baseline payoffs reward useful research over guessing and reflexive DNC. | Guessing, fixed-answer voting, seat splitting or instant DNC earns more than honest research, or all-DNC is stable. |
+| Cheap objections keep settled rulings honest. | Wrong rulings go unchallenged, or a common system out-earns a better one. |
+| A separate court does more than escalation inside each juror. | One court whose jurors escalate internally matches it on cost, speed and quality. |
 | The inherited evidence standard supports consistent review across both courts. | Later panels systematically rely on inadmissible new facts or misclassify retrieval failure as substantive absence. |
 | The protocol remains solver-neutral in practice. | Most assigned weight depends on one provider or common evaluator, despite multiple operators. |
 
@@ -25,15 +27,21 @@ These are research questions, not promised findings.
 
 Keep input distributions, adjudication deadlines, and cost accounting comparable. Where an arm requires different deadlines or panels, include those differences in the service-level results rather than comparing only model responses.
 
-**A — ruling-only baseline.** Original choices with a stated aggregation/review mechanism and no DNC option.
+**A — Court #34 as it runs today.** Original choices and no DNC. The most-voted answer wins, and ordinary appeals apply.
 
-**B — DNC without penalties.** Same courts and route as arm C, but DNC votes pay nothing. Specify participation fees; “free DNC” is not a complete payoff table.
+**A2 — one court, escalation inside each juror.** As A, with jurors that try a fast model first and fall back to a slower agent (RFC §1.1).
 
-**C — RFC baseline.** The payoffs in RFC §7.3: no transfers between jurors in escalated rounds; unallocated fees and penalties go to the Core owner, as in Kleros V2 today (returning unused fees to the parties would need a Core change); DNC pays `d` when a ruling vote in its round matched the final ruling, and `ε` otherwise.
+**A3 — any split moves up.** No DNC. A round that isn't unanimous moves to the agent court.
 
-**D — explicitly labeled variants.** Change one thing at a time: the Draft 0.1 early-solver transfer (RFC §7.4), with and without a cap; broader DNC penalties; different aggregation thresholds, DNC charges and pot sizes; and ways to protect honest jurors on hard cases without DNC, such as outcome-dependent fees and deposits or penalties scaled by peer prediction ([George, 2024](https://blog.kleros.io/incentivizing-jurors-to-honestly-report-uncommon-answers-deposit-sizes-lazy-strategies-and-peer-prediction/)). Don't relabel a variant as the baseline.
+**B — DNC without a charge.** Same courts and route as arm C, but DNC votes pay nothing. Specify participation fees; “free DNC” is not a complete payoff table.
 
-Compare against sending cases straight to the agent court as well: the decision court is useful only if its early rulings justify their added cost and delay. Also compare letting agent-court jurors report DNC too (the Draft 0.1 design) against requiring them to rule.
+**C — RFC baseline.** The payoffs in RFC §7.3 with one flat DNC charge, one seat per juror, and the prepaid objection of RFC §6.6. No money moves between jurors in any decision-court round. Unallocated fees and penalties go to the Core owner, as in Kleros V2 today (returning unused fees to the parties would need a Core change).
+
+**C2 — DNC kit inside Court #34.** As C, but both rounds run in Court #34, with its fee and stake (RFC §1.1).
+
+**D — explicitly labeled variants.** Change one thing at a time: Kleros's usual sharing in settled rounds, with and without the stakes; the Draft 0.2 two-level DNC charge; a charge for a failed objection; the Draft 0.1 early-solver transfer (RFC §7.4), with and without a cap; broader DNC penalties; different aggregation thresholds, DNC charges and pot sizes; and ways to protect honest jurors on hard cases without DNC, such as outcome-dependent fees and deposits or penalties scaled by peer prediction ([George, 2024](https://blog.kleros.io/incentivizing-jurors-to-honestly-report-uncommon-answers-deposit-sizes-lazy-strategies-and-peer-prediction/)). Don't relabel a variant as the baseline.
+
+The decision court is useful only if its early rulings justify their added cost and delay over arms A, A2 and C2. Also compare letting agent-court jurors report DNC too (the Draft 0.1 design) against requiring them to rule.
 
 ## 3. Agent and adversary populations
 
@@ -64,12 +72,16 @@ An executable reference model should check at least these invariants before any 
 | Missing participation | Absent, invalid, and unrevealed votes do not become DNC. |
 | No absence veto | Withholding a reveal can't change a majority outcome that a contrary vote couldn't change. |
 | Escalation eligibility | Partial tallies and duplicate transition calls cannot create unauthorized successor rounds. |
-| Route termination | The route has one automatic step; any failure selects only a predeclared terminal or recovery path. |
+| Route termination | The route has one prepaid step, automatic or by objection; any failure selects only a predeclared terminal or recovery path. |
 | Unresolved cases | If no qualifying ruling is ever reached, ruling votes and DNC settle identically; only absent votes are penalized. |
 | Funding separation | Future conditional penalties are not spent as if they already funded a successor round. |
 | Conservation | Payouts, refunds, amounts sent to the Core owner, and explicitly handled dust equal the fees and penalties collected. |
-| Exposure limit | Combined losses never exceed the disclosed locked liability, including any ordinary coherence penalty. |
-| DNC charges | A DNC vote pays `d` only if some ruling vote in its round matched the final ruling, and `ε` otherwise; never both, and never more than `L`. |
+| Exposure limit | Combined losses never exceed the disclosed locked liability. |
+| DNC charges | A DNC vote pays exactly `d`, once. Its fee and its charge never reach another juror. |
+| No transfers | In a decision-court round, no juror receives another juror's fee, stake or charge. |
+| Deposits | A case can't start without both deposits. A move spends exactly one agent-court round and one trigger reward. Deposits that backed the final ruling are refunded in full. |
+| No funding default | A decision-court ruling changes only through a new panel's vote. |
+| One seat per juror | No address holds two seats in a decision-court round. |
 | Confirmation provenance | One later vote, an overturned provisional ruling, or an unqualified funding default cannot trigger confirmation. |
 | Exactly-once settlement | Repeated calls cannot duplicate a penalty, reward, stake release, or application execution. |
 | Finality and release | Unconfirmed and terminal paths have explicit release rules; provisional recipients need not be trusted to return funds. |
@@ -83,7 +95,9 @@ At minimum, test the following paths:
 
 - All-DNC panels with later successful resolution, both honest difficulty and coordinated low effort.
 - A single early matching answer produced by research, by random choice, or by a controller spreading its assigned votes across options.
-- No early matching vote despite later resolution: DNC votes then pay only `ε`, never `d`.
+- No early matching vote despite later resolution: DNC votes pay the same charge as in any other round.
+- A settled round that nobody objects to: jurors that copy the expected majority, a common system against a better one, and an operator holding a majority of seats through several addresses.
+- Objections: by a side that expects to lose and wants time, by a side that also holds a seat, and wrong rulings that nobody objects to.
 - Ownership across both courts, deliberate early DNC, and attempts to capture agent-court fees (or, in variant arms, early-solver transfers) through another address, including when the agent court is a parent of the decision court.
 - DNC near the threshold, deliberate non-reveal, and strategic disagreement intended to force an expensive successor.
 - A provisional downstream result that reverses, a funding default without fresh voting, a kit change, and a terminal unresolved case.
@@ -98,13 +112,17 @@ Report total cost to parties, operator research costs, locked-capital cost, conv
 
 Report utility by both assignment and controlling entity. Include fee income, penalties, bonuses, capital duration, failed transactions, and costs of unsuccessful investigation. Sensitivity analysis should vary answer base rates, correlations, ownership concentration, available evidence, DNC charges, penalty sizes, quorum rules, and pot sizes.
 
-Calibration: for jurors who answer rather than report DNC, report how often they agree with the final ruling and compare it with the break-even in RFC §7.3 (about 60–70% with its example values), both overall and by operator. Error dependence: on independently labeled cases, report how often operators are wrong together and their error correlation after adjusting for case difficulty. "Same wrong answer when both are wrong" says nothing when there are only two options. In tests where implementations are known, also report how often jurors using the same model and method vote identically.
+Settled cases: report how often the losing side objects, how often an objection overturns the ruling, and how often the random sample of settled cases that is sent up or reviewed in shadow is overturned. Panels: report the share of rounds in which one operator held a majority of the seats, and the share of seats that didn't vote.
+
+Calibration: for jurors who answer rather than report DNC, report how often they agree with the final ruling and compare it with the bar in RFC §7.3 (0.88 with its example values), both overall and by operator. Error dependence: on independently labeled cases, report how often operators are wrong together and their error correlation after adjusting for case difficulty. "Same wrong answer when both are wrong" says nothing when there are only two options. In tests where implementations are known, also report how often jurors using the same model and method vote identically.
 
 Use all eligible cases in denominators. Include inactive, non-convergent, unreviewed, overturned, and terminal cases. Do not compare only the candidate's resolved subset against a baseline's full sample.
 
 Where correctness cannot be independently established, label the metric agreement or expert-panel assessment rather than accuracy. Public justifications may improve review, but their availability must be identical across comparison arms or reported as an intervention.
 
 ## 8. Staged acceptance gates
+
+**Shadow gate:** no contracts. Several independent fast jurors publish a hash of each vote on live cases before the ruling and open it afterwards. Report how many cases a three-seat panel of them would have settled, how often it matched the ruling, and how often different operators were wrong together.
 
 **Model gate:** a complete state machine, payoff table, and terminal policy; exhaustive small-state tests; no unexplained accounting gaps.
 
@@ -117,5 +135,7 @@ Where correctness cannot be independently established, label the metric agreemen
 **Pilot gate:** explicit scope, economic limits, monitoring, shutdown/recovery procedure, and the governance authorization actually required for the selected deployment.
 
 Passing a gate means publishing the evidence for it, not changing the status label in this document. Thresholds for success should be preregistered before collecting the corresponding evaluation results.
+
+**Pass marks and sample size.** Fix three numbers before the data: the smallest share of cases the decision court must settle, the largest share of settled cases that may be overturned, and a total cost to parties below arm A. Plan the sample to match. With no error in `n` checked settled cases, the error rate is below `3/n` with 95% confidence, so 60 clean cases support "under 5%" and 300 support "under 1%". If a third of cases are settled and every settled case is checked, that takes about 180 to 900 cases; checking only a share takes proportionally more. Court #34 has had 129 in total (RFC §1.2).
 
 Return to [RFC-0001](../rfcs/0001-decision-agent-courts.md).
